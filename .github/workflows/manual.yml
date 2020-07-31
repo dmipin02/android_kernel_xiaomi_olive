@@ -1,0 +1,49 @@
+name: Build kernel
+
+on: 
+  release:
+    types: [published]
+  push:
+    branches: 
+      - GSI
+
+jobs:
+  build: 
+    runs-on: ubuntu-16.04
+    
+    env:
+      ARCH: arm64
+      CROSS_COMPILE: /home/runner/work/android_kernel_xiaomi_olive/android_kernel_xiaomi_olive/gcc-linaro-6.4.1-2018.05-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-
+      EXTRAVERSION: .kali
+      KBUILD_BUILD_HOST: 4pda
+      KBUILD_BUILD_USER: dmipin02
+    
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Freeze Actions timeout
+        run: touch /tmp/keepalive
+
+      - name: Install packages
+        run: |
+          sudo apt-get update -qyy
+          sudo apt-get install wget curl bc make git build-essential libssl-dev libglib2.0-dev curl flex g++-multilib gcc-multilib gnupg gperf lib32ncurses5-dev lib32z1-dev libesd0-dev libncurses5-dev libsdl1.2-dev libwxgtk-media3.0-dev libxml2 libxml2-utils lzop pngcrush schedtool squashfs-tools xsltproc zip zlib1g-dev
+      
+      - name: Download toolchain
+        run: |
+          wget https://releases.linaro.org/components/toolchain/binaries/6.4-2018.05/aarch64-linux-gnu/gcc-linaro-6.4.1-2018.05-x86_64_aarch64-linux-gnu.tar.xz
+          tar xf gcc-linaro-6.4.1-2018.05-x86_64_aarch64-linux-gnu.tar.xz
+          
+      - name: Prepare build
+        run: |
+          make olive-perf_defconfig
+
+      - name: Build kernel
+        run: make -j24
+      
+      - name: Build modules
+        run: make modules -j24
+      
+      - name: SSH for debug
+        uses: P3TERX/debugger-action@master
+
