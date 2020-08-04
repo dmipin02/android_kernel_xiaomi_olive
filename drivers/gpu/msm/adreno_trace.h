@@ -611,5 +611,8 @@ TRACE_EVENT(adreno_preempt_done,
 );
 #endif /* _ADRENO_TRACE_H */
 
+#undef TRACE_INCLUDE_PATH
+#define TRACE_INCLUDE_PATH ../../drivers/gpu/msm
+
 /* This part must be outside protection */
 #include <trace/define_trace.h>
